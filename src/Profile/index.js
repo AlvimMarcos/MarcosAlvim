@@ -1,0 +1,92 @@
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { FiPower, FiTrash2 } from "react-icons/fi";
+
+
+import api from '../services/api';
+
+import './styles.css';
+
+import logoImg from '../assets/logo.svg';
+
+export default function Profile() {
+    const [incidents, setIncidents] = useState([]);
+
+
+    const ongId = localStorage.getItem('ongId');
+    const ongName = localStorage.getItem('ongName');
+
+    useEffect(() => {
+        api.get('profile', {
+            headers: {
+                Authorization: ongId,
+            }
+        }).then(response => {
+            setIncidents(response.data);
+        })
+    }, [ongId]);
+
+    async function handleDeleteIncident (id) {
+        try{    
+            await api.delete(`incidents/${id}`, {
+                    headers:{
+                        Authorization:ongId,
+                    }
+            });
+        }catch (err){
+            alert('Deleting Error, try again');
+        }
+
+    }
+    return (
+        <div className="profile-container">
+            <header>
+                <img src={logoImg} alt="Be the Hero" />
+                <span>Welcome, {ongName}</span>
+                <Link className="button" to="/incidents/new"> Insert new case</Link>
+                <button type="button" />
+                <FiPower size={18} color="E020041" />
+            </header>
+            <h1> Registered Cases </h1>
+
+            
+
+            {incidents.length ===0 && <h1>Loading 3...</h1> }
+            
+
+            
+             {/* <h1 className={incidents.length===0 ? 'display:none;' : ''}> Loading... </h1>            */}
+
+
+
+
+            <ul>
+                {incidents.map(incident => (
+
+                    <li key={incident.id}>
+                        <strong>CASE:</strong>
+                        <p>{incident.title}</p>
+
+                        <strong>DESCRIPTIONS:</strong>
+                        <p>{incident.description}</p>
+
+                        <strong>VALUE/PRICE:</strong>
+                        <p>{Intl.NumberFormat('en-US', {style:'currency',currency:'USD'    }).format(incident.value )}</p>
+
+                        <button onClick={ () => handleDeleteIncident(incident.id)} type="button">
+                            <FiTrash2 size={20} color="a8a8b3" />
+                        </button>
+                    </li>
+
+
+
+
+
+                ))}
+
+
+
+            </ul>
+        </div>
+    );
+}
